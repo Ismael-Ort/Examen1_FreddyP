@@ -1,0 +1,147 @@
+# Examen1_FreddyP
+//Ismael R. Ortega Almonte: 10145335
+
+package logico;
+
+import java.util.*;
+import java.text.SimpleDateFormat;
+
+// Clase que representa un trabajo de impresión
+class PrintJob implements Comparable<PrintJob> {
+    
+	private String usuario;
+    private long tiempo;
+    private char prioridad;
+    
+    public PrintJob(String user, long tiempo, char prioridad) {
+        this.usuario = user;
+        this.tiempo = tiempo;
+        this.prioridad = prioridad;
+    }
+    
+    public String getUser() { 
+    	return usuario; 
+    }
+    public long getTiempo() { 
+    	return tiempo; 
+    }
+    public char getPrioridad() { 
+    	return prioridad; 
+    }
+    
+    @Override
+    public int compareTo(PrintJob otra) {
+    	
+        int prioridadActual, prioridadOtra;
+
+        if (this.prioridad == 'H') {
+            prioridadActual = 3;
+        } else if (this.prioridad == 'M') {
+            prioridadActual = 2;
+        } else {
+            prioridadActual = 1;
+        }
+
+        if (otra.prioridad == 'H') {
+            prioridadOtra = 3;
+        } else if (otra.prioridad == 'M') {
+            prioridadOtra = 2;
+        } else {
+            prioridadOtra = 1;
+        }
+
+        if (prioridadActual != prioridadOtra) {
+            return Integer.compare(prioridadOtra, prioridadActual);
+        }
+        return Long.compare(this.tiempo, otra.tiempo);
+    }
+
+    @Override
+    public String toString() {
+    	
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss");
+        String formattedTime = formatoFecha.format(new Date(tiempo));
+        String resultado = "Usuario: " + usuario + ", Prioridad: " + prioridad + ", Hora: " + formattedTime;
+        
+		return resultado;
+    }
+}
+
+// Clase que maneja la cola de impresión
+class PrintQueue {
+    private PriorityQueue<PrintJob> queue;
+    
+    public PrintQueue() {
+        queue = new PriorityQueue<>();
+    }
+    
+   //Agrega un nuevo trabajo a la cola con el usuario y prioridad especificados 
+    public void addJob(String user, char prioridad) {
+        queue.offer(new PrintJob(user, System.currentTimeMillis(), prioridad));
+    }
+    
+    public PrintJob procesartrabajos() {
+        return queue.poll();
+    }
+    
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+}
+
+// Clase que simula el servicio de impresión
+class PrintService {
+	
+    private PrintQueue printQueue;
+    
+    public PrintService() {
+        printQueue = new PrintQueue();
+    }
+   
+    public void submitJob(String user, char prioridad) {
+    	
+    	//Aquí establece la prioridad M por defecto. En caso de que se inserte otra letra que no
+    	//sean las indicadas también lo asume como M.
+        if (prioridad != 'H' && prioridad != 'M' && prioridad != 'L') {
+        	prioridad = 'M'; 
+        }
+        printQueue.addJob(user, prioridad);
+        System.out.println("Trabajo agregado: " + user + " con prioridad " + prioridad);
+    }
+    
+    //Si la pila de trabajos no está vacía imprime los trabajos registrados
+    public void procesoTrabajos() {
+        while (!printQueue.isEmpty()) {
+            PrintJob job = printQueue.procesartrabajos();
+            System.out.println(job);
+        }
+    }
+}
+
+// Clase principal para simular la entrada de trabajos
+public class Impresion {
+    public static void main(String[] args) {
+    	
+        Scanner scanner = new Scanner(System.in);
+        PrintService printService = new PrintService();
+        
+        System.out.println("Gestión de Impresión");
+        while (true) {
+            System.out.print("Ingrese el nombre del usuario (2 para salir): ");
+            String user = scanner.nextLine();
+            if (user.equalsIgnoreCase("2")) {
+            	break;
+            } 
+            
+            System.out.print("Prioridad (H - Alta, M - Media, L - Baja): ");
+            char prioridad = scanner.nextLine().toUpperCase().charAt(0);
+            
+            printService.submitJob(user, prioridad);
+        }
+        
+        System.out.println("\nResultado de impresión...");
+        printService.procesoTrabajos();
+        scanner.close();
+        
+    }
+}
